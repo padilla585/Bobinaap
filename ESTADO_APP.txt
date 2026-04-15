@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 15/04/2026
-VERSIÓN ACTUAL: v3.10 — DESPLEGADA ✅
+VERSIÓN ACTUAL: v3.15 — DESPLEGADA ✅
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -179,6 +179,41 @@ v3.4  |  15/04/2026
   - Página: updatefound → statechange → SKIP_WAITING (flujo completo)
   - Página: visibilitychange → reg.update() al volver a la pestaña
   - Página: reload con location.replace + timestamp para evitar HTTP cache
+
+v3.11  |  15/04/2026
+  - Fix CORS: X-Token añadido a Access-Control-Allow-Headers (las peticiones con
+    token fallaban en preflight OPTIONS en algunos navegadores/dispositivos)
+  - Ajustes → Usuarios: ahora muestra el departamento asignado de cada usuario
+  - Ajustes → Usuarios: botón 🏢 para cambiar el departamento de cualquier usuario
+    sin necesidad de borrar y recrear la cuenta
+  - Soluciona el problema de usuarios de Seguridad que no podían acceder a su dpto:
+    el encargado/superadmin asigna el departamento correcto desde Ajustes → Usuarios
+
+v3.15  |  15/04/2026
+  - Migración completa a nueva cuenta Cloudflare (padilla585.projects)
+  - Nueva app: https://padilla585projects.github.io/Alejandra-APP/
+  - Nuevo worker: alejandra-app-api.alejandra-app.workers.dev
+  - Nueva DB: alejandra-db (415 filas migradas)
+  - App vieja restaurada apuntando a worker viejo (gestibobina-proxy)
+  - Botón ⚠️ Resetear sesión y caché en Ajustes → Sistema
+  - SW: al actualizar borra URL guardada en localStorage automáticamente
+
+v3.14  |  15/04/2026
+  - Al actualizar SW limpia URL del worker guardada en localStorage
+  - Fuerza usar siempre API_DEFAULT del código actualizado
+
+v3.13  |  15/04/2026
+  - Botón ⚠️ Resetear sesión y caché en Ajustes → Sistema
+  - Limpia localStorage + caché SW + recarga forzada
+
+v3.12  |  15/04/2026
+  - Migración a nueva cuenta Cloudflare (primera versión)
+  - URL worker actualizada a alejandra-app-api
+
+v3.11  |  15/04/2026
+  - Fix CORS: X-Token añadido a Access-Control-Allow-Headers
+  - Ajustes → Usuarios: muestra departamento de cada usuario
+  - Botón 🏢 para cambiar departamento sin borrar la cuenta
 
 v3.10  |  15/04/2026
   - Bug #1: Icono en pantalla de departamentos invisible → fix color fondo SVG
