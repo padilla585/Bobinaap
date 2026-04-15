@@ -19,15 +19,25 @@ PAGES:   https://padilla585.github.io/Bobinaap/
 
 - Git: instalado, conectado a GitHub (padilla585), credenciales guardadas
 - Node.js: v24.14.1
-- Wrangler: instalado y autenticado con OAuth (padilla585@gmail.com)
-- Deploy frontend: git push → GitHub Pages automático
-- Deploy backend:  npx wrangler deploy  (desde carpeta Bobinaap)
-- ADMIN_CODE: configurado como secreto en Cloudflare (no está en el código)
-- GOOGLE_SHEET_ID: secreto en Cloudflare
-- TELEGRAM_BOT_TOKEN: secreto en Cloudflare
-- TELEGRAM_CHAT_ID: 6965043
+- Tokens y credenciales: guardados en NUEVA_CUENTA.txt (solo local, en .gitignore)
 - Obra activa: CPD Getafe (código: 001, id: 1)
-- Bobinas antiguas: 42 registros intactos en D1
+
+⚠️  REGLA DE DEPLOY: al hacer cualquier cambio, actualizar SIEMPRE las DOS apps:
+
+  APP VIEJA (padilla585):
+    GitHub:  git push → padilla585/Bobinaap (automático con git)
+    Worker:  deploy via API con token Workers-old (ver NUEVA_CUENTA.txt)
+             Account: c100d5a0ea37ee03989fe769c7259b83
+             Worker:  gestibobina-proxy
+             D1:      eac9f2d2-0845-409c-9032-109c563d7eec
+
+  APP NUEVA (padilla585projects):
+    GitHub:  GitHub API con token ghp_ (ver NUEVA_CUENTA.txt)
+             Repo: padilla585projects/Alejandra-APP
+    Worker:  deploy via API con token Workers-new (ver NUEVA_CUENTA.txt)
+             Account: d65ead2b2967bf68ff3848a36cd7b1b4
+             Worker:  alejandra-app-api
+             D1:      0c9eccde-78f1-476d-ac68-bf452bec0c62
 
 ================================================================================
   ROLES Y ACCESO
