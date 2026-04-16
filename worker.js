@@ -1931,20 +1931,21 @@ async function registrarEmpresa(request, env) {
   const hash = await hashPassword(password);
 
   // Crear empresa
-  const empresa = await env.DB.prepare(
-    'INSERT INTO empresas (nombre, slug, email, plan, activa) VALUES (?, ?, ?, ?, 1) RETURNING id'
-  ).bind(empresa_nombre.trim(), slug, emailClean, 'basic').first();
-  const empresa_id = empresa.id;
+  const empResult = await env.DB.prepare(
+    'INSERT INTO empresas (nombre, slug, email, plan, activa) VALUES (?, ?, ?, ?, 1)'
+  ).bind(empresa_nombre.trim(), slug, emailClean, 'basic').run();
+  const empresa_id = empResult.meta.last_row_id;
+  if (!empresa_id) return err('Error al crear la empresa, intenta de nuevo');
 
   // Crear primera obra (opcional)
   let obra_id = null, obra_nombre_final = null;
   if (obra_nombre?.trim()) {
     const codObra = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const obra = await env.DB.prepare(
-      'INSERT INTO obras (nombre, codigo, activa, empresa_id) VALUES (?, ?, 1, ?) RETURNING id, nombre'
-    ).bind(obra_nombre.trim(), codObra, empresa_id).first();
-    obra_id = obra.id;
-    obra_nombre_final = obra.nombre;
+    const obraResult = await env.DB.prepare(
+      'INSERT INTO obras (nombre, codigo, activa, empresa_id) VALUES (?, ?, 1, ?)'
+    ).bind(obra_nombre.trim(), codObra, empresa_id).run();
+    obra_id = obraResult.meta.last_row_id;
+    obra_nombre_final = obra_nombre.trim();
   }
 
   // Crear usuario admin

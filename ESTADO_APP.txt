@@ -230,6 +230,10 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - SW bumpeado a alejandra-v4.0
 
 v4.9  |  16/04/2026  [AMBAS APPS]
+  - BUG registrarEmpresa: "Cannot read properties of undefined (reading 'prepare')"
+    · Causa: INSERT...RETURNING con .first() devolvía null en D1 de la app vieja
+    · Fix: cambiado a .run() + meta.last_row_id para empresa y obra
+    · Worker viejo (gestibobina-proxy) redesplegado ✅
   - #50: Home superadmin siempre lleva al selector de departamentos
   - #42: "Buscar en todos los departamentos" eliminado del escáner de Eléctrico
   - #12: Buscador matrícula/código movido encima de la cámara
