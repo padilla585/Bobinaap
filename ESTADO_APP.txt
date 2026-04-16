@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 16/04/2026
-VERSIÓN ACTUAL: v4.1 (nueva app) / v4.1 (app vieja) — DESPLEGADAS ✅
+VERSIÓN ACTUAL: v4.4 (nueva app) / v4.4 (app vieja) — SINCRONIZADAS ✅
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -26,6 +26,10 @@ PAGES:   https://padilla585.github.io/Bobinaap/
   - Por defecto: actualizar SOLO la app nueva (padilla585projects/Alejandra-APP)
   - Antes de cada deploy, PREGUNTAR al usuario si quiere actualizar también la vieja
   - Solo actualizar las dos si el usuario lo confirma explícitamente
+  - ESTADO_APP.txt: subir SOLO al repositorio donde se hayan hecho cambios
+    · Si solo se cambia la nueva → solo GitHub nuevo
+    · Si se cambian las dos → ambos GitHub
+    · Nunca subir ESTADO_APP.txt a un repo que no ha recibido cambios en esa sesión
 
   APP VIEJA (padilla585):
     GitHub:  git push → padilla585/Bobinaap (automático con git)
@@ -223,6 +227,35 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.4  |  16/04/2026  [AMBAS APPS]
+  - Botón Inventario (nav inferior) ahora enruta según departamento:
+    · Seguridad → va a screenSeguridad, pestaña Inventario
+    · Eléctrico / Mecánicas → comportamiento anterior (screenModule → stock)
+  - Preparado para añadir más departamentos con su propio inventario
+  - SW bumpeado a alejandra-v4.4
+
+v4.3  |  16/04/2026  [AMBAS APPS]
+  - Modal de detalle para ítems del inventario de Seguridad
+    · Al pulsar un ítem ya NO cambia a la pestaña escáner
+    · Se abre un modal (bottom sheet) con toda la info: tipo, estado, stock, destino, caducidad, notas
+    · Botones de acción (SALIDA / DEVOLUCIÓN / BAJA) dentro del modal
+    · Historial de movimientos incluido
+    · Se cierra tocando fuera o con ×
+  - SW bumpeado a alejandra-v4.3
+  - Sugerencia #25 resuelta
+
+v4.2  |  16/04/2026  [AMBAS APPS]
+  - Ideas & Feedback rediseñado con sistema de estados (pendiente/en_progreso/resuelto)
+  - Admin: filtros por estado y categoría, badges de estado coloreados, campo respuesta
+  - Badge en nav muestra sugerencias pendientes (antes mostraba no leídas)
+  - guardarSugerencia: ahora incluye empresa_id y estado='pendiente' en INSERT
+  - Nuevas funciones JS: selSugCategoria, filtrarSug, cambiarEstadoSug, abrirRespuestaSug
+  - cargarSugerenciasAdmin: usa filtros _sugFiltroKey/_sugFiltroVal para la query
+  - SW bumpeado a alejandra-v4.2
+  - Versión display en Ajustes: v4.2
+  - Worker desplegado: alejandra-app-api (Version ID: 3283ee97-437d-4b23-b0b6-c9c735d9dba5)
+  - index.html + sw.js en GitHub: padilla585projects/Alejandra-APP ✅
 
 v4.1  |  16/04/2026  [NUEVA APP — también aplicado en vieja para compatibilidad]
   - Fix crítico: quitada excepción isSeguridad en getPemp y getCarretillas
