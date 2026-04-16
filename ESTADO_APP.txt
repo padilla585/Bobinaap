@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 16/04/2026
-VERSIÓN ACTUAL: v4.5 (nueva app) / v4.5 (app vieja) — SINCRONIZADAS ✅
+VERSIÓN ACTUAL: v4.6 (nueva app) / v4.5 (app vieja)
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -228,6 +228,22 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.6  |  16/04/2026  [SOLO NUEVA APP]
+  - Registro multi-tenant de empresas (/empresas/registro — ruta pública)
+  - Login por email + contraseña (empresa_admin y futuros usuarios)
+    · PBKDF2 (100k iteraciones, SHA-256) con salt aleatorio para passwords
+  - Nuevo rol empresa_admin: elige departamento al entrar, accede a panel empresa
+  - Login dual en pantalla de acceso: pestaña Código | pestaña Email
+  - Wizard de registro 3 pasos: empresa → cuenta admin → primera obra (opcional)
+  - Panel "🏢 Empresa" en Ajustes → info empresa, obras, usuarios
+  - getAuth devuelve isEmpresaAdmin; rolLabel muestra "Admin" para empresa_admin
+  - DB: columnas email y password_hash añadidas a tabla usuarios
+  - Worker: nuevas rutas /mi-empresa (GET/PUT) y /empresas/registro (POST)
+  - Telegram: notificación al registrar nueva empresa
+  - SW bumpeado a alejandra-v4.6
+  - Worker desplegado: alejandra-app-api (Version ID: f78c21c4-1d62-41ae-98d0-02a3b624995a)
+  - index.html + sw.js en GitHub: padilla585projects/Alejandra-APP ✅
 
 v4.5  |  16/04/2026  [AMBAS APPS]
   - Logo visible en el header principal (antes oculto por CSS)
