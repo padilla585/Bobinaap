@@ -21,6 +21,25 @@ function err(msg, status = 400) {
   return json({ ok: false, error: msg }, status);
 }
 
+// ── Password helpers (PBKDF2 via Web Crypto API) ─────────────────────────────
+async function hashPassword(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const hash = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256);
+  const toHex = b => Array.from(b).map(x => x.toString(16).padStart(2,'0')).join('');
+  return toHex(salt) + ':' + toHex(new Uint8Array(hash));
+}
+
+async function verifyPassword(password, stored) {
+  if (!stored || !stored.includes(':')) return false;
+  const [saltHex, hashHex] = stored.split(':');
+  const salt = new Uint8Array(saltHex.match(/.{2}/g).map(b => parseInt(b, 16)));
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const hash = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256);
+  const hashHex2 = Array.from(new Uint8Array(hash)).map(x => x.toString(16).padStart(2,'0')).join('');
+  return hashHex === hashHex2;
+}
+
 // ── Auth helper ──────────────────────────────────────────────────────────────
 async function getAuth(request, env) {
   // 1. Token D1 (sistema nuevo)
@@ -31,9 +50,11 @@ async function getAuth(request, env) {
       if (sesion) {
         env.DB.prepare('UPDATE sesiones SET last_used = CURRENT_TIMESTAMP WHERE token = ?').bind(xToken).run();
         const isSuperadmin = sesion.es_admin === 1 || sesion.rol === 'superadmin';
+        const isEmpresaAdmin = sesion.rol === 'empresa_admin';
         return {
           isAdmin: sesion.es_admin === 1,
           isSuperadmin,
+          isEmpresaAdmin,
           isEncargado: sesion.rol === 'encargado',
           isSeguridad: sesion.departamento === 'seguridad',
           rol: sesion.rol,
@@ -105,6 +126,9 @@ export default {
       if (path === '/verificar'   && method === 'POST') return await verificarAcceso(request, env);
       if (path === '/acceso'      && method === 'POST') return await verificarAcceso(request, env); // alias legacy
       if (path === '/logout'      && method === 'POST') return await cerrarSesionServidor(request, env);
+      if (path === '/empresas/registro' && method === 'POST') return await registrarEmpresa(request, env);
+      if (path === '/mi-empresa'        && method === 'GET')  return await getMiEmpresa(request, env);
+      if (path === '/mi-empresa'        && method === 'PUT')  return await updateMiEmpresa(request, env);
 
       // ── Obras ──────────────────────────────────────────────────────────────
       if (path === '/obras'       && method === 'GET')    return await getObras(request, env);
@@ -201,7 +225,7 @@ export default {
       if (path === '/sugerencias'  && method === 'GET')  return await getSugerencias(request, env);
       if (path.startsWith('/sugerencias/') && method === 'PUT') {
         const sid = parseInt(path.split('/sugerencias/')[1]);
-        return await marcarSugerenciaLeida(sid, env);
+        return await marcarSugerenciaLeida(sid, request, env);
       }
       if (path.startsWith('/sugerencias/') && method === 'DELETE') {
         const sid = parseInt(path.split('/sugerencias/')[1]);
@@ -289,10 +313,30 @@ async function verificarAcceso(request, env) {
     return json({ ok: true, rol: 'superadmin', nombre: 'Admin', obra_id: null, obra_nombre: null, token });
   }
 
+  // 1.5 Login por email + contraseña (empresa_admin y futuros usuarios)
+  const emailInput = (body.email || '').trim().toLowerCase();
+  const passInput  = body.password || '';
+  if (emailInput && passInput) {
+    try {
+      const u = await env.DB.prepare(
+        'SELECT u.*, o.nombre as obra_nombre FROM usuarios u LEFT JOIN obras o ON u.obra_id = o.id WHERE LOWER(u.email) = ? AND u.activo = 1 LIMIT 1'
+      ).bind(emailInput).first();
+      if (!u || !u.password_hash) return err('Email o contraseña incorrectos', 401);
+      const valid = await verifyPassword(passInput, u.password_hash);
+      if (!valid) return err('Email o contraseña incorrectos', 401);
+      const dept = u.rol === 'empresa_admin' ? null : (u.departamento || 'electrico');
+      const token = await crearSesion(env, {
+        nombre: u.nombre, rol: u.rol, obra_id: u.obra_id, obra_nombre: u.obra_nombre,
+        departamento: dept, es_admin: false, usuario_id: u.id, empresa_id: u.empresa_id || 1,
+      });
+      return json({ ok: true, nombre: u.nombre, rol: u.rol, obra_id: u.obra_id, obra_nombre: u.obra_nombre, departamento: dept, token });
+    } catch(e) { return err('Error en login: ' + e.message, 500); }
+  }
+
   // 2. Buscar en tabla usuarios
   try {
     const usuario = await env.DB.prepare(
-      'SELECT u.*, o.nombre as obra_nombre FROM usuarios u LEFT JOIN obras o ON u.obra_id = o.id WHERE u.codigo = ? AND u.activo = 1'
+      'SELECT u.*, o.nombre as obra_nombre FROM usuarios u LEFT JOIN obras o ON u.obra_id = o.id WHERE u.codigo = ? AND u.activo = 1 ORDER BY u.id DESC LIMIT 1'
     ).bind(codigo.trim()).first();
 
     if (usuario) {
@@ -902,6 +946,12 @@ async function crearUsuario(request, env) {
     return err('No autorizado para crear usuarios en otra obra', 403);
   }
 
+  // Verificar que el código no está ya en uso (activo) en esta empresa
+  const existing = await env.DB.prepare(
+    'SELECT id, nombre FROM usuarios WHERE codigo = ? AND activo = 1 AND empresa_id = ?'
+  ).bind(codigo.trim(), empresa_id).first();
+  if (existing) return err(`El código "${codigo}" ya lo usa "${existing.nombre}". Elige otro.`, 409);
+
   try {
     const r = await env.DB.prepare(
       'INSERT INTO usuarios (nombre, codigo, rol, obra_id, departamento, activo, empresa_id) VALUES (?, ?, ?, ?, ?, 1, ?)'
@@ -1220,12 +1270,13 @@ async function getStats(request, env) {
 
 async function guardarSugerencia(request, env) {
   try {
+    const { empresa_id } = await getAuth(request, env);
     const body = await request.json().catch(() => ({}));
     const { texto, categoria, usuario, obra } = body;
     if (!texto || !texto.trim()) return err('El texto de la sugerencia es obligatorio');
     await env.DB.prepare(
-      'INSERT INTO sugerencias (texto, categoria, usuario, obra) VALUES (?, ?, ?, ?)'
-    ).bind(texto.trim().slice(0, 1000), categoria || null, usuario || null, obra || null).run();
+      'INSERT INTO sugerencias (texto, categoria, usuario, obra, empresa_id, estado) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(texto.trim().slice(0, 1000), categoria || null, usuario || null, obra || null, empresa_id, 'pendiente').run();
     const catIcon = { mejora: '🔧', error: '🐛', nuevo: '✨', otro: '💬' };
     const icon = catIcon[categoria] || '💬';
     await sendTelegram(env,
@@ -1240,19 +1291,35 @@ async function guardarSugerencia(request, env) {
 }
 
 async function getSugerencias(request, env) {
-  const { isSuperadmin } = await getAuth(request, env);
+  const { isSuperadmin, empresa_id } = await getAuth(request, env);
   if (!isSuperadmin) return err('No autorizado', 403);
   const url = new URL(request.url);
-  const soloNoLeidas = url.searchParams.get('noLeidas') === '1';
-  let sql = 'SELECT * FROM sugerencias';
-  if (soloNoLeidas) sql += ' WHERE leida = 0';
-  sql += ' ORDER BY created_at DESC LIMIT 100';
-  const { results } = await env.DB.prepare(sql).all();
+  const estadoFilter    = url.searchParams.get('estado');    // pendiente | en_progreso | resuelto
+  const categoriaFilter = url.searchParams.get('categoria'); // error | mejora | nuevo | otro
+
+  let sql = 'SELECT * FROM sugerencias WHERE empresa_id = ?';
+  const params = [empresa_id];
+  if (estadoFilter)    { sql += ' AND estado = ?';    params.push(estadoFilter); }
+  if (categoriaFilter) { sql += ' AND categoria = ?'; params.push(categoriaFilter); }
+  sql += ' ORDER BY created_at DESC LIMIT 200';
+  const { results } = await env.DB.prepare(sql).bind(...params).all();
   return json(results);
 }
 
-async function marcarSugerenciaLeida(id, env) {
-  await env.DB.prepare('UPDATE sugerencias SET leida = 1 WHERE id = ?').bind(id).run();
+async function marcarSugerenciaLeida(id, request, env) {
+  // PUT puede llevar body con { estado, respuesta }
+  const body = await request.json().catch(() => ({}));
+  const estado   = body.estado   || null;
+  const respuesta = body.respuesta !== undefined ? body.respuesta : null;
+
+  let sql = 'UPDATE sugerencias SET leida = 1';
+  const params = [];
+  if (estado)              { sql += ', estado = ?';    params.push(estado); }
+  if (respuesta !== null)  { sql += ', respuesta = ?'; params.push(respuesta); }
+  sql += ' WHERE id = ?';
+  params.push(id);
+
+  await env.DB.prepare(sql).bind(...params).run();
   return json({ ok: true });
 }
 
@@ -1843,4 +1910,75 @@ async function alertasDiarias(env) {
   } catch(e) {
     console.error('alertasDiarias error:', e.message);
   }
+}
+
+// ══════════════════════════════════════════════════════
+// EMPRESAS — Registro + Panel
+// ══════════════════════════════════════════════════════
+
+async function registrarEmpresa(request, env) {
+  const body = await request.json().catch(() => ({}));
+  const { empresa_nombre, sector, admin_nombre, email, password, obra_nombre } = body;
+  if (!empresa_nombre?.trim() || !email?.trim() || !password || !admin_nombre?.trim())
+    return err('Faltan datos obligatorios (empresa, nombre, email, contraseña)');
+  if (password.length < 8) return err('La contraseña debe tener al menos 8 caracteres');
+
+  const emailClean = email.trim().toLowerCase();
+  const existing = await env.DB.prepare('SELECT id FROM usuarios WHERE LOWER(email) = ? LIMIT 1').bind(emailClean).first();
+  if (existing) return err('Este email ya está registrado', 409);
+
+  const slug = empresa_nombre.trim().toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  const hash = await hashPassword(password);
+
+  // Crear empresa
+  const empresa = await env.DB.prepare(
+    'INSERT INTO empresas (nombre, slug, email, plan, activa) VALUES (?, ?, ?, ?, 1) RETURNING id'
+  ).bind(empresa_nombre.trim(), slug, emailClean, 'basic').first();
+  const empresa_id = empresa.id;
+
+  // Crear primera obra (opcional)
+  let obra_id = null, obra_nombre_final = null;
+  if (obra_nombre?.trim()) {
+    const codObra = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const obra = await env.DB.prepare(
+      'INSERT INTO obras (nombre, codigo, activa, empresa_id) VALUES (?, ?, 1, ?) RETURNING id, nombre'
+    ).bind(obra_nombre.trim(), codObra, empresa_id).first();
+    obra_id = obra.id;
+    obra_nombre_final = obra.nombre;
+  }
+
+  // Crear usuario admin
+  const codAdmin = 'ADM' + empresa_id + '_' + Math.random().toString(36).substring(2,5).toUpperCase();
+  await env.DB.prepare(
+    'INSERT INTO usuarios (nombre, codigo, email, password_hash, rol, departamento, activo, empresa_id, obra_id) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)'
+  ).bind(admin_nombre.trim(), codAdmin, emailClean, hash, 'empresa_admin', 'electrico', empresa_id, obra_id).run();
+
+  const adminUser = await env.DB.prepare('SELECT id FROM usuarios WHERE LOWER(email) = ? LIMIT 1').bind(emailClean).first();
+  const token = await crearSesion(env, {
+    nombre: admin_nombre.trim(), rol: 'empresa_admin', obra_id, obra_nombre: obra_nombre_final,
+    departamento: null, es_admin: false, usuario_id: adminUser.id, empresa_id,
+  });
+
+  await sendTelegram(env, `🏢 <b>Nueva empresa:</b> ${empresa_nombre}\n👤 ${admin_nombre} (${emailClean})\n🏗 Obra: ${obra_nombre_final || '—'}`);
+  return json({ ok: true, token, rol: 'empresa_admin', nombre: admin_nombre.trim(), empresa_nombre: empresa_nombre.trim(), empresa_id, obra_id, obra_nombre: obra_nombre_final });
+}
+
+async function getMiEmpresa(request, env) {
+  const auth = await getAuth(request, env);
+  if (!auth.empresa_id) return err('Sin empresa asignada', 403);
+  const empresa = await env.DB.prepare('SELECT id, nombre, slug, email, plan, activa, created_at FROM empresas WHERE id = ?').bind(auth.empresa_id).first();
+  if (!empresa) return err('Empresa no encontrada', 404);
+  const obras    = (await env.DB.prepare('SELECT id, nombre, codigo FROM obras WHERE empresa_id = ? AND activa = 1 ORDER BY nombre').bind(auth.empresa_id).all()).results;
+  const usuarios = (await env.DB.prepare('SELECT id, nombre, rol, departamento, obra_id FROM usuarios WHERE empresa_id = ? AND activo = 1 ORDER BY nombre').bind(auth.empresa_id).all()).results;
+  return json({ empresa, obras, usuarios });
+}
+
+async function updateMiEmpresa(request, env) {
+  const auth = await getAuth(request, env);
+  if (!auth.empresa_id || (auth.rol !== 'empresa_admin' && !auth.isSuperadmin)) return err('Sin permisos', 403);
+  const body = await request.json().catch(() => ({}));
+  const { nombre } = body;
+  if (!nombre?.trim()) return err('Falta el nombre de la empresa');
+  await env.DB.prepare('UPDATE empresas SET nombre = ? WHERE id = ?').bind(nombre.trim(), auth.empresa_id).run();
+  return json({ ok: true });
 }
