@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 16/04/2026
-VERSIÓN ACTUAL: v4.7 (ambas apps)
+VERSIÓN ACTUAL: v4.8 (ambas apps)
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -228,6 +228,15 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.8  |  16/04/2026  [AMBAS APPS]
+  - BUG #47: buscarMaquina() — botón "📦 Ver en inventario" en el resultado
+    · irAInventario(matricula, modulo): navega al módulo correcto con búsqueda prefiltrada
+  - CACHE: banner de actualización visible en la parte superior de la pantalla
+    · Aparece cuando hay un SW nuevo esperando (reg.waiting) o al detectar updatefound
+    · Botón "Actualizar ahora" fuerza recarga con timestamp
+    · Soluciona el problema de usuarios que no recibían updates automáticamente
+  - SW bumpeado a alejandra-v4.8
 
 v4.7  |  16/04/2026  [AMBAS APPS]
   - BUG #36: Mecánicas inventory — currentModule ahora inicializa a 'pemp' para usuarios de mecánicas
