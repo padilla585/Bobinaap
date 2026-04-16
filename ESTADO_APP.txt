@@ -434,11 +434,6 @@ Frontend (index.html + sw.js):
      - Pendiente de definir: historial completo o solo últimos N mensajes
      - Pendiente de definir: solo texto o también adjuntos
 
-  8. Entorno de pruebas (staging)
-     - Worker separado: gestibobina-proxy-dev + D1 separada
-     - dev.html en mismo repo → github.io/Bobinaap/dev.html
-     - Prod y dev en paralelo sin afectarse
-     - Pendiente de implementar
 
   4. Fotos / firma digital / albarán PDF
      - Depende de migración a Cloudflare R2 (nueva cuenta)
