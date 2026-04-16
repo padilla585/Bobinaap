@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 16/04/2026
-VERSIÓN ACTUAL: v4.4 (nueva app) / v4.4 (app vieja) — SINCRONIZADAS ✅
+VERSIÓN ACTUAL: v4.5 (nueva app) / v4.5 (app vieja) — SINCRONIZADAS ✅
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -227,6 +227,14 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.5  |  16/04/2026  [AMBAS APPS]
+  - Logo visible en el header principal (antes oculto por CSS)
+  - Badge de versión (v4.5) en esquina inferior derecha de la pantalla home
+  - Select "Todas las obras" ya no se corta: max-width aumentado a 160px + flex:1
+  - Sugerencias #23, #24, #27, #32 marcadas como resueltas
+  - Sugerencias #17,19,21,22,25,26,28,30,31 marcadas como resueltas en DB vieja
+  - SW bumpeado a alejandra-v4.5
 
 v4.4  |  16/04/2026  [AMBAS APPS]
   - Botón Inventario (nav inferior) ahora enruta según departamento:
