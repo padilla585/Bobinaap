@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 15/04/2026
-VERSIÓN ACTUAL: v3.15 — DESPLEGADA ✅
+VERSIÓN ACTUAL: v4.0 (nueva app) / v3.16 (app vieja) — DESPLEGADAS ✅
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -59,13 +59,20 @@ Departamentos:
 Tablas originales:  bobinas, obras, historial, proveedores, tipos_cable
 Tablas añadidas:    usuarios, pemp, carretillas, historial_pemp,
                     historial_carretillas, logs, sugerencias,
-                    inventario_seg, movimientos_seg, tipos_material_seg
+                    inventario_seg, movimientos_seg, tipos_material_seg,
+                    sesiones
+Tablas multi-tenant [solo nueva app]:
+                    empresas (id, nombre, slug, email, plan, activa, created_at)
 Catálogos:          tipos_pemp, tipos_carretilla, energias_carretilla
 Columnas extra:
-  bobinas:      num_albaran, departamento
-  pemp:         fecha_averia, fecha_reparacion, departamento
-  carretillas:  fecha_averia, fecha_reparacion, departamento
-  usuarios:     departamento
+  bobinas:      num_albaran, departamento, empresa_id*
+  pemp:         fecha_averia, fecha_reparacion, departamento, empresa_id*
+  carretillas:  fecha_averia, fecha_reparacion, departamento, empresa_id*
+  usuarios:     departamento, empresa_id*
+  obras:        empresa_id*
+  sesiones:     empresa_id*
+  [todas las demás tablas tienen empresa_id* también]
+  (*) solo en nueva app (alejandra-db)
 
 Backup local: C:\Users\Adrian\Downloads\Proyecto GestiBobina\backup_db_20260413.sql
 
@@ -199,6 +206,26 @@ v3.11  |  15/04/2026
   - Soluciona el problema de usuarios de Seguridad que no podían acceder a su dpto:
     el encargado/superadmin asigna el departamento correcto desde Ajustes → Usuarios
 
+v4.0  |  15/04/2026  [SOLO NUEVA APP]
+  - Arquitectura multi-tenant: tabla `empresas` creada en D1
+  - empresa_id añadido a TODAS las tablas (bobinas, pemp, carretillas, obras,
+    usuarios, historial*, inventario_seg, movimientos_seg, sesiones, logs,
+    sugerencias, proveedores, tipos_*, energias_carretilla, tipos_material_seg)
+  - Todas las queries filtran por empresa_id (aislamiento de datos)
+  - Todos los INSERTs incluyen empresa_id del usuario autenticado
+  - getAuth() devuelve empresa_id desde sesiones D1
+  - crearSesion() almacena empresa_id (del usuario que inicia sesión)
+  - getCatalogo() acepta request para resolver empresa_id vía auth
+  - Empresa por defecto: id=1, nombre="Empresa Principal", slug="principal"
+  - Todos los datos existentes migrados con empresa_id=1 automáticamente
+  - Índices creados: idx_*_empresa en tablas principales
+  - SW bumpeado a alejandra-v4.0
+
+v3.16  |  15/04/2026
+  - Fix filtrado departamentos: quitado 'OR departamento IS NULL' en getBobinas/getPemp/getCarretillas
+  - Usuarios con departamento NULL en DB actualizados a 'electrico'
+  - Aplicado en AMBAS apps (worker viejo y nuevo)
+
 v3.15  |  15/04/2026
   - Migración completa a nueva cuenta Cloudflare (padilla585.projects)
   - Nueva app: https://padilla585projects.github.io/Alejandra-APP/
@@ -293,6 +320,33 @@ Frontend (index.html + sw.js):
 ================================================================================
   PENDIENTE / FUTURAS ACTUALIZACIONES
 ================================================================================
+
+[ MULTI-TENANT — EN PROGRESO (solo nueva app) ]
+
+  Fase 1 ✅ COMPLETADA (v4.0):
+    - Tabla empresas creada
+    - empresa_id en todas las tablas
+    - Queries filtran por empresa_id
+    - Empresa por defecto id=1
+
+  Fase 2 — PENDIENTE: Auth con email + password_hash
+    - Añadir email + password_hash a tabla usuarios
+    - Nuevo endpoint POST /login (email+password, sin código)
+    - Mantener compatibilidad con códigos actuales (legacy)
+
+  Fase 3 — PENDIENTE: Registro de empresa (self-service)
+    - POST /empresas/registro (crea empresa + primer usuario admin)
+    - Pantalla de registro en frontend
+    - Email de bienvenida (opcional)
+
+  Fase 4 — PENDIENTE: Almacenamiento R2
+    - Fotos de máquinas, firma digital, PDFs de albarán
+    - Bucket R2 en nueva cuenta
+    - Rutas /upload, /files/:id en worker
+
+  Fase 5 — PENDIENTE: Facturación (Stripe)
+    - Planes: basic / pro / enterprise
+    - Se deja para el futuro
 
 [ PRIORIDAD ALTA — acordado, pendiente de implementar ]
 
