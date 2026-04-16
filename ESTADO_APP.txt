@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 16/04/2026
-VERSIÓN ACTUAL: v4.6 (nueva app) / v4.5 (app vieja)
+VERSIÓN ACTUAL: v4.7 (ambas apps)
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -228,6 +228,28 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.7  |  16/04/2026  [AMBAS APPS]
+  - BUG #36: Mecánicas inventory — currentModule ahora inicializa a 'pemp' para usuarios de mecánicas
+    · iniciarApp(), cerrarSesion(), seleccionarDepto() y la var global usan dept para elegir módulo
+  - BUG #48/#49: Botón pestaña Dev. ahora usa ícono SVG (flecha retorno) en lugar de ↩ texto
+  - BUG #40: Formulario de registro multi-paso
+    · regGoStep() scrollea el overlay a top en móvil
+    · regSiguiente() envuelta en try-catch con mensaje de error inline
+    · Inputs con optional chaining (?.) para mayor robustez
+  - BUG #45: Inventario seguridad — botón ✏️ Editar añadido al modal segVerItem
+    · segEditarItem(id): muestra formulario inline con estado, destino, notas
+    · segGuardarEdicion(id): hace PUT /inventario-seg/:id y recarga inventario
+  - BUG #47: Stock cards ahora son clickables (onclick=abrirEdit en el div card)
+    · stopPropagation en stock-actions-row para evitar doble disparo
+  - BUG #46: Panel devolución scanner refactorizado para usar estructura cam-viewport
+    · Misma estructura HTML/CSS que el scanner principal (cam-idle, video, scan-frame)
+    · devOpenCamera/devCloseCamera ajustados para no ocultar el viewport contenedor
+  - BUG #41: SW cache más agresivo en mobile
+    · activate: filtra solo caches antiguas (k !== CACHE) en lugar de borrar todas
+    · SW update cada 10 minutos via setInterval en registro del SW
+    · checkConnection() añade reg.update() en cada check de conexión
+  - SW bumpeado a alejandra-v4.7
 
 v4.6  |  16/04/2026  [SOLO NUEVA APP]
   - Registro multi-tenant de empresas (/empresas/registro — ruta pública)
