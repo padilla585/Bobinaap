@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 16/04/2026
-VERSIÓN ACTUAL: v4.8 (ambas apps)
+VERSIÓN ACTUAL: v4.9 (ambas apps)
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -229,6 +229,21 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
 
+v4.9  |  16/04/2026  [AMBAS APPS]
+  - #50: Home superadmin siempre lleva al selector de departamentos
+  - #42: "Buscar en todos los departamentos" eliminado del escáner de Eléctrico
+  - #12: Buscador matrícula/código movido encima de la cámara
+  - #43: Datalist con marcas existentes en campos Marca de PEMP y Carretillas
+  - #35: Catálogos en Ajustes filtrados por departamento:
+         Eléctrico → Bobinas + PEMP + Carretillas
+         Mecánicas → PEMP + Carretillas
+         Seguridad → solo Material Seguridad
+         Superadmin → todo
+  - #37: Pestaña Catálogos oculta para usuarios de Seguridad
+  - #14: Botón "↩ DEVOLVER EQUIPO" aparece al escanear un código que ya existe
+         en el inventario → navega directamente a la pestaña Devoluciones
+  - SW bumpeado a alejandra-v4.9
+
 v4.8  |  16/04/2026  [AMBAS APPS]
   - BUG #47: buscarMaquina() — botón "📦 Ver en inventario" en el resultado
     · irAInventario(matricula, modulo): navega al módulo correcto con búsqueda prefiltrada
@@ -437,19 +452,12 @@ Frontend (index.html + sw.js):
 
 [ SUGERENCIAS PENDIENTES — APP VIEJA (gestibobina-db) ]
 
-  ERRORES (ninguno pendiente — todos resueltos en v4.7/v4.8)
+  ERRORES (ninguno pendiente — todos resueltos en v4.7/v4.8/v4.9)
 
   MEJORAS:
-  #50 - Home superadmin → debe ir al selector de departamentos
   #44 - Ficha de máquina a pantalla completa
-  #43 - Desplegable sugerencias marca/modelo al crear PEMP nueva
-  #42 - Quitar "buscar en todos dept" del escáner de Eléctrico
   #38 - Ajustes → cerrar sesión a todos / ver quién está conectado
-  #37 - Ajustes filtrados por departamento + subpestañas para superadmin
-  #35 - Catálogos organizados por departamentos
   #15 - Pedidos en parte eléctrica + sync Sheets
-  #14 - Devoluciones también con escáner
-  #12 - Buscador encima de la cámara de scan
 
   NUEVAS FUNCIONALIDADES:
   #39 - Gestión de herramientas por departamento (escáner código + catálogo)
