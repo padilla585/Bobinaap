@@ -23,12 +23,13 @@ PAGES:   https://padilla585.github.io/Bobinaap/
 - Obra activa: CPD Getafe (código: 001, id: 1)
 
 ⚠️  REGLA DE DEPLOY:
-  - Por defecto: actualizar SOLO la app nueva (padilla585projects/Alejandra-APP)
-  - Antes de cada deploy, PREGUNTAR al usuario si quiere actualizar también la vieja
-  - Solo actualizar las dos si el usuario lo confirma explícitamente
+  - BUGS (correcciones): actualizar SIEMPRE las DOS apps a la vez, sin preguntar
+  - MEJORAS / NUEVAS FEATURES: actualizar SOLO la app nueva (padilla585projects/Alejandra-APP)
+    · La app vieja (padilla585/Bobinaap) solo recibe bugs
+    · Las mejoras se desarrollan en la nueva; la vieja se mantiene estable
   - ESTADO_APP.txt: subir SOLO al repositorio donde se hayan hecho cambios
     · Si solo se cambia la nueva → solo GitHub nuevo
-    · Si se cambian las dos → ambos GitHub
+    · Si se cambian las dos (bug) → ambos GitHub
     · Nunca subir ESTADO_APP.txt a un repo que no ha recibido cambios en esa sesión
 
   APP VIEJA (padilla585):
