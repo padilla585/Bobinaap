@@ -230,6 +230,13 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - SW bumpeado a alejandra-v4.0
 
 v4.10  |  17/04/2026  [AMBAS APPS]
+  - BUG CRÍTICO: nueva app apuntaba a worker viejo (API_DEFAULT incorrecto) → login fallaba
+    · Corregido: API_DEFAULT = 'https://alejandra-app-api.alejandra-app.workers.dev'
+  - BUG: logs nueva DB sin columnas 'origen' y 'detalle' → INSERT fallaba silenciosamente
+    · Migración aplicada: ALTER TABLE logs ADD COLUMN origen/detalle en DB nueva
+  - MEJORA logs: helper logActividad() en ambos workers para grabar desde el servidor
+    · guardarLog ahora incluye empresa_id en el INSERT
+    · Login exitoso de usuario queda registrado en logs (origen: 'login')
   - BUG: eliminada función cargarRecentActivity() y su llamada en iniciarApp()
     · El elemento recentActivity no existía en el HTML → error en logs de ambas DBs
     · Código muerto: eliminado limpiamente
