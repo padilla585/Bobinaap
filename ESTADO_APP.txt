@@ -230,6 +230,10 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - SW bumpeado a alejandra-v4.0
 
 v4.10  |  17/04/2026  [AMBAS APPS]
+  - BUG CRÍTICO: binding D1 'DB' se perdía en cada deploy via REST API → env.DB undefined
+    · Login, sesiones y cualquier operación de DB fallaban con "Cannot read properties of undefined"
+    · Fix: deploy siempre incluye binding D1 en el metadata (ambos workers)
+    · Verificado: login crea sesión correctamente en ambas DBs
   - BUG CRÍTICO: nueva app apuntaba a worker viejo (API_DEFAULT incorrecto) → login fallaba
     · Corregido: API_DEFAULT = 'https://alejandra-app-api.alejandra-app.workers.dev'
   - BUG: logs nueva DB sin columnas 'origen' y 'detalle' → INSERT fallaba silenciosamente
@@ -241,6 +245,12 @@ v4.10  |  17/04/2026  [AMBAS APPS]
     · El elemento recentActivity no existía en el HTML → error en logs de ambas DBs
     · Código muerto: eliminado limpiamente
     · SW bumpeado a alejandra-v4.10
+
+⚠️  REGLA DE DEPLOY ACTUALIZADA (CRÍTICO):
+  Al desplegar workers via REST API curl, SIEMPRE incluir el binding D1 en el metadata:
+  -F "metadata={\"main_module\":\"worker.js\",\"compatibility_date\":\"2024-01-01\",
+      \"bindings\":[{\"type\":\"d1\",\"name\":\"DB\",\"id\":\"<DATABASE_ID>\"}]};type=application/json"
+  Sin esto, env.DB queda undefined y toda la app deja de funcionar.
 
 v4.9  |  16/04/2026  [AMBAS APPS]
   - BUG registrarEmpresa: "Cannot read properties of undefined (reading 'prepare')"
