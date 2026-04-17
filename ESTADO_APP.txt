@@ -4,8 +4,8 @@
   Ruta local: C:\Users\Adrian\Downloads\Proyecto GestiBobina\Bobinaap
 ================================================================================
 
-ÚLTIMA ACTUALIZACIÓN: 16/04/2026
-VERSIÓN ACTUAL: v4.9 (ambas apps)
+ÚLTIMA ACTUALIZACIÓN: 17/04/2026
+VERSIÓN ACTUAL: v4.10 (ambas apps)
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -228,6 +228,12 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.10  |  17/04/2026  [AMBAS APPS]
+  - BUG: eliminada función cargarRecentActivity() y su llamada en iniciarApp()
+    · El elemento recentActivity no existía en el HTML → error en logs de ambas DBs
+    · Código muerto: eliminado limpiamente
+    · SW bumpeado a alejandra-v4.10
 
 v4.9  |  16/04/2026  [AMBAS APPS]
   - BUG registrarEmpresa: "Cannot read properties of undefined (reading 'prepare')"
