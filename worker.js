@@ -126,6 +126,8 @@ export default {
       if (path === '/verificar'   && method === 'POST') return await verificarAcceso(request, env);
       if (path === '/acceso'      && method === 'POST') return await verificarAcceso(request, env); // alias legacy
       if (path === '/logout'      && method === 'POST') return await cerrarSesionServidor(request, env);
+      if (path === '/sesiones'    && method === 'GET')  return await getSesionesActivas(request, env);
+      if (path === '/sesiones/cerrar-todas' && method === 'POST') return await cerrarTodasSesiones(request, env);
       if (path === '/empresas/registro' && method === 'POST') return await registrarEmpresa(request, env);
       if (path === '/mi-empresa'        && method === 'GET')  return await getMiEmpresa(request, env);
       if (path === '/mi-empresa'        && method === 'PUT')  return await updateMiEmpresa(request, env);
@@ -394,6 +396,31 @@ async function cerrarSesionServidor(request, env) {
     try {
       await env.DB.prepare('DELETE FROM sesiones WHERE token = ?').bind(token).run();
     } catch (_) {}
+  }
+  return json({ ok: true });
+}
+
+async function getSesionesActivas(request, env) {
+  const auth = await getAuth(request, env);
+  if (!auth.isSuperadmin && !auth.isAdmin && !auth.isEncargado) return err('No autorizado', 403);
+  const { results } = await env.DB.prepare(
+    'SELECT id, nombre, rol, departamento, obra_nombre, last_used, created_at FROM sesiones WHERE empresa_id = ? ORDER BY last_used DESC'
+  ).bind(auth.empresa_id).all();
+  return json(results);
+}
+
+async function cerrarTodasSesiones(request, env) {
+  const auth = await getAuth(request, env);
+  if (!auth.isSuperadmin && !auth.isAdmin) return err('No autorizado', 403);
+  const body = await request.json().catch(() => ({}));
+  const { rol } = body;
+  const miToken = request.headers.get('X-Token');
+  if (rol) {
+    await env.DB.prepare('DELETE FROM sesiones WHERE empresa_id = ? AND rol = ? AND token != ?')
+      .bind(auth.empresa_id, rol, miToken || '').run();
+  } else {
+    await env.DB.prepare('DELETE FROM sesiones WHERE empresa_id = ? AND token != ?')
+      .bind(auth.empresa_id, miToken || '').run();
   }
   return json({ ok: true });
 }
