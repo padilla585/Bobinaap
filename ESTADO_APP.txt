@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 18/04/2026
-VERSIÓN ACTUAL: v4.15 app vieja | v4.24 app nueva
+VERSIÓN ACTUAL: v4.16 app vieja | v4.24 app nueva
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -228,6 +228,15 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.16  |  18/04/2026  [SOLO APP VIEJA]
+  - MEJORA: botón ← Atrás en el header
+    · Aparece al entrar en Inventario, Ajustes o Ideas
+    · Para superadmin: vuelve al selector de departamento
+    · Para seguridad: vuelve a su pantalla de escáner
+    · Para el resto: vuelve al home
+    · Botón físico de Android también funciona (popstate + history.pushState)
+  - GitHub actualizado ✅
 
 v4.15  |  18/04/2026  [SOLO APP VIEJA]
   - MEJORA: intervalo de auto-actualización reducido de 2 min a 30 segundos
