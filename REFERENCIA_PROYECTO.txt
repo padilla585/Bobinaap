@@ -1,7 +1,7 @@
 ================================================================================
   ALEJANDRA APP — REFERENCIA COMPLETA DEL PROYECTO
   Leer este archivo AL INICIO de cada sesión para continuar sin problemas.
-  Última actualización: 17/04/2026
+  Última actualización: 18/04/2026
   ⚠️  NORMA: actualizar ESTE archivo + ESTADO_APP.txt después de CADA cambio.
 ================================================================================
 
@@ -19,14 +19,14 @@ HAY DOS APPS EN PARALELO:
   └─ Una sola empresa fija (CPD Getafe)
   └─ Login solo por código de usuario
   └─ Solo recibe BUGS — no recibe nuevas features
-  └─ Versión: v4.14
+  └─ Versión: v4.17
 
   APP NUEVA (desarrollo activo, futura sustitución)
   └─ Multi-empresa (cada empresa tiene sus datos aislados por empresa_id)
   └─ Login por código O por email + contraseña
   └─ Wizard de registro de nuevas empresas
   └─ Aquí van todas las mejoras y nuevas features
-  └─ Versión: v4.16
+  └─ Versión: v4.27
 
 REGLA DE DEPLOY:
   - BUGS      → ambas apps siempre
@@ -137,21 +137,25 @@ git -c credential.helper= push https://padilla585projects:<TOKEN_GITHUB_NUEVO>@g
   VERSIONES ACTUALES Y CHANGELOGS
 ================================================================================
 
-APP VIEJA:  v4.14  (sw.js: alejandra-v4.14 | version.json: 4.14)
-APP NUEVA:  v4.17  (sw.js: alejandra-v4.17 | version.json: 4.17)
+APP VIEJA:  v4.17  (sw.js: alejandra-v4.17 | version.json: 4.17)
+APP NUEVA:  v4.27  (sw.js: alejandra-v4.27 | version.json: 4.27)
 
 Historial reciente:
-  v4.17 [nueva] — #52 botón ← Atrás en header + botón físico Android (popstate)
-                   #53 filtro sugerencias por departamento; departamento guardado en INSERT
-                   DB: columna departamento añadida a tabla sugerencias
-  v4.16 [nueva] — empresa_admin con permisos completos (getAuth+worker+frontend)
-                   Fix "Error al cargar" en panel Mi Empresa (.json() faltante)
-  v4.15 [ambas] — Auto-actualización sin intervención: version.json + SW no cachea HTML
-  v4.14 [ambas] — Auto-actualización (versión vieja), cerrar sesiones fix
-  v4.13 [ambas] — Fix cerrar sesiones (#67/#68), filtros sugerencias
-  v4.12 [ambas] — Fix #51 editar salidas seguridad; #44 ficha pantalla completa; #38 sesiones
-  v4.11 [nueva] — Sync con v4.8+v4.9 de app vieja
-  v4.10 [ambas] — Fix crítico D1 binding perdido en deploy; fix login nueva app
+  v4.27 [nueva] — #78 dept siempre al abrir (superadmin/empresa_admin)
+                   #79 fichar sin cuenta: nombre manual → personal_externo auto
+  v4.26 [nueva] — Sheets sync herramientas y kits
+  v4.25 [nueva] — Fix async scope global (guardarFichaje, guardarHerramienta, etc.)
+  v4.24 [nueva] — Fix badge versión; intervalo update 30s
+  v4.23 [nueva] — Fix modales (active→show) Herramientas/Pedidos/Fichajes
+  v4.22 [nueva] — Fix UX herramientas; FAB fichajes oculto al salir de Personal
+  v4.21 [nueva] — Rediseño devoluciones con modo ENTRADA/DEVOLUCIÓN
+  v4.20 [nueva] — Módulo Personal: fichajes, exportar Excel. DB: fichajes, personal_externo
+  v4.19 [nueva] — Módulo Herramientas: kits + inventario. DB: herramientas, kits
+  v4.18 [nueva] — Módulo Pedidos. Editar empresa. DB: pedidos
+  v4.17 [nueva/vieja] — Botón ← Atrás + Android; filtro sugerencias por dept
+  v4.16 [nueva] — Fix empresa_admin permisos; fix panel Mi Empresa
+  v4.15 [ambas] — Auto-actualización silenciosa: version.json + SW no cachea HTML
+  v4.14 [ambas] — Fix wizard empresa, filtros Ideas, cerrar sesiones
 
 ================================================================================
   ARQUITECTURA TÉCNICA
