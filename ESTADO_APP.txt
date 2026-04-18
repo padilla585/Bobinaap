@@ -4,8 +4,8 @@
   Ruta local: C:\Users\Adrian\Downloads\Proyecto GestiBobina\Bobinaap
 ================================================================================
 
-ÚLTIMA ACTUALIZACIÓN: 17/04/2026
-VERSIÓN ACTUAL: v4.14 app vieja | v4.17 app nueva
+ÚLTIMA ACTUALIZACIÓN: 18/04/2026
+VERSIÓN ACTUAL: v4.15 app vieja | v4.24 app nueva
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -228,6 +228,46 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.15  |  18/04/2026  [SOLO APP VIEJA]
+  - MEJORA: intervalo de auto-actualización reducido de 2 min a 30 segundos
+  - MEJORA: reg.update() (chequeo SW) reducido de 5 min a 30 segundos
+  - MEJORA: badge de versión en home e ID en Ajustes → dinámicos desde APP_VERSION
+    · Nunca quedarán desactualizados aunque no se toque el HTML
+  - GitHub actualizado ✅
+
+v4.24  |  18/04/2026  [SOLO NUEVA APP]
+  - FIX: badge de versión en home mostraba v4.22 (hardcoded incorrecto)
+  - FIX: versión en Ajustes → Sistema mostraba v4.16 (hardcoded incorrecto)
+  - MEJORA: ambas versiones ahora se renderizan dinámicamente desde APP_VERSION
+    · Nunca más quedarán desactualizadas aunque no se toque el HTML
+  - MEJORA: intervalo de auto-actualización reducido de 2 min a 30 segundos
+  - MEJORA: reg.update() (chequeo SW) también cada 30 s (antes solo en visibilitychange)
+  - Worker y GitHub actualizados ✅
+
+v4.23  |  18/04/2026  [SOLO NUEVA APP]
+  - BUG CRÍTICO: modales de Herramientas, Pedidos y Personal/Fichajes no aparecían
+    · Causa: classList.add('active') pero CSS solo reconoce .modal-overlay.show
+    · Fix: cambiado a classList.add/remove('show') en los 6 modales afectados:
+      modalHerramienta, modalKit, modalHerrDetalle, modalKitDetalle,
+      modalFichaje, modalPedido
+    · Afectaba: crear/editar herramientas, crear kits, ver detalles,
+      crear/editar pedidos, crear/editar fichajes
+  - Worker y GitHub actualizados ✅
+
+v4.18  |  17/04/2026  [SOLO NUEVA APP]
+  - #15: Módulo de Pedidos en parte eléctrica
+    · Tab 📦 Pedidos visible solo para Eléctrico y superadmin/empresa_admin
+    · Todos los roles (incluido operario) pueden crear y cambiar estado
+    · Solo encargado/admin pueden borrar pedidos
+    · Estados: pendiente → solicitado → recibido (o cancelado)
+    · Al marcar recibido se guarda fecha automáticamente
+    · Sync automático con Google Sheets → pestaña Elec-Pedidos
+    · Columnas Sheets: Estado | Descripción | Referencia | Cantidad | Unidad |
+      Proveedor | Obra | Solicitado por | Fecha Solicitud | Fecha Recepción | Notas
+    · Notificación Telegram al crear nuevo pedido
+    · DB: tabla pedidos creada en alejandra-db ✅
+    · Worker y GitHub actualizados ✅
 
 v4.17  |  17/04/2026  [SOLO NUEVA APP]
   - #52: Botón "← Atrás" en el header
@@ -578,7 +618,7 @@ Frontend (index.html + sw.js):
   #54 ✅ - Editar datos en inventario de seguridad (v4.12 — fix #51)
   #52 ✅ - Botón "← Atrás" en header + botón físico Android (v4.17 — solo nueva)
   #53 ✅ - Filtrar sugerencias por departamento (v4.17 — solo nueva)
-  #15 - Pedidos en parte eléctrica + sync Sheets
+  #15 ✅ - Pedidos en parte eléctrica + sync Sheets Elec-Pedidos (v4.18 — solo nueva)
 
   NUEVAS FUNCIONALIDADES:
   #39 - Gestión de herramientas por departamento (escáner código + catálogo)
