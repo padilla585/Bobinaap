@@ -269,6 +269,8 @@ export default {
       if ((path === '/sync' || path === '/sync-sheets') && method === 'POST') { await syncSheets(env); return json({ ok: true, mensaje: 'Sync completado' }); }
       if (path === '/sync-debug'   && method === 'POST')  return await syncSheetsDebug(env);
 
+      if (path === '/restaurar/inventario' && method === 'POST') return await restaurarInventario(request, env);
+
       return err('Ruta no encontrada', 404);
     } catch (e) {
       console.error(e);
@@ -2033,4 +2035,60 @@ async function updateMiEmpresa(request, env) {
   if (!nombre?.trim()) return err('Falta el nombre de la empresa');
   await env.DB.prepare('UPDATE empresas SET nombre = ? WHERE id = ?').bind(nombre.trim(), auth.empresa_id).run();
   return json({ ok: true });
+}
+
+// ── BACKUP / RESTAURAR ────────────────────────────────────────────────────────
+async function restaurarInventario(request, env) {
+  const auth = await getAuth(request, env).catch(() => null);
+  if (!auth?.isAdmin && auth?.rol !== 'superadmin') return err('Sin permisos', 403);
+
+  const bk = await request.json().catch(() => null);
+  if (!bk || bk.tipo !== 'inventario') return err('Archivo no válido: se esperaba backup de inventario', 400);
+
+  const eid = auth.empresa_id || 1;
+
+  // 1. Borrar datos actuales
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM bobinas WHERE empresa_id=?').bind(eid),
+    env.DB.prepare('DELETE FROM pemp WHERE empresa_id=?').bind(eid),
+    env.DB.prepare('DELETE FROM carretillas WHERE empresa_id=?').bind(eid),
+  ]);
+  // inventario_seg: borrar movimientos primero (FK), luego ítems
+  const invIds = await env.DB.prepare('SELECT id FROM inventario_seg WHERE empresa_id=?').bind(eid).all().then(r => r.results.map(r => r.id));
+  if (invIds.length) {
+    const chunks = [];
+    for (let i = 0; i < invIds.length; i += 50) chunks.push(invIds.slice(i, i + 50));
+    for (const chunk of chunks) {
+      const ph = chunk.map(() => '?').join(',');
+      await env.DB.prepare(`DELETE FROM movimientos_seg WHERE item_id IN (${ph})`).bind(...chunk).run();
+    }
+    await env.DB.prepare('DELETE FROM inventario_seg WHERE empresa_id=?').bind(eid).run();
+  }
+
+  // Helper para insertar en lotes de 50
+  const batchInsert = async (rows, stmt) => {
+    if (!rows?.length) return;
+    const chunks = [];
+    for (let i = 0; i < rows.length; i += 50) chunks.push(rows.slice(i, i + 50));
+    for (const chunk of chunks) await env.DB.batch(chunk.map(r => stmt(r)));
+  };
+
+  // 2. Insertar desde backup
+  await batchInsert(bk.bobinas, b => env.DB.prepare(
+    'INSERT OR REPLACE INTO bobinas (id,codigo,num_albaran,proveedor,tipo_cable,obra_id,estado,registrado_por,devuelto_por,fecha_entrada,fecha_devolucion,notas,departamento,empresa_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+  ).bind(b.id, b.codigo, b.num_albaran||null, b.proveedor||'', b.tipo_cable||'', b.obra_id||null, b.estado||'activa', b.registrado_por||null, b.devuelto_por||null, b.fecha_entrada||null, b.fecha_devolucion||null, b.notas||null, b.departamento||'electrico', eid));
+
+  await batchInsert(bk.pemp, p => env.DB.prepare(
+    'INSERT OR REPLACE INTO pemp (id,matricula,tipo,marca,proveedor,energia,estado,fecha_entrada,registrado_por,notas,fecha_averia,fecha_reparacion,fecha_ultima_revision,fecha_proxima_revision,devuelto_por,fecha_devolucion,obra_id,departamento,empresa_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+  ).bind(p.id, p.matricula, p.tipo||'', p.marca||'', p.proveedor||'', p.energia||'', p.estado||'activa', p.fecha_entrada||null, p.registrado_por||null, p.notas||'', p.fecha_averia||null, p.fecha_reparacion||null, p.fecha_ultima_revision||null, p.fecha_proxima_revision||null, p.devuelto_por||null, p.fecha_devolucion||null, p.obra_id||null, p.departamento||'electrico', eid));
+
+  await batchInsert(bk.carretillas, c => env.DB.prepare(
+    'INSERT OR REPLACE INTO carretillas (id,matricula,tipo,marca,proveedor,energia,estado,fecha_entrada,registrado_por,notas,fecha_averia,fecha_reparacion,fecha_ultima_revision,fecha_proxima_revision,devuelto_por,fecha_devolucion,obra_id,departamento,empresa_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+  ).bind(c.id, c.matricula, c.tipo||'', c.marca||'', c.proveedor||'', c.energia||'', c.estado||'activa', c.fecha_entrada||null, c.registrado_por||null, c.notas||'', c.fecha_averia||null, c.fecha_reparacion||null, c.fecha_ultima_revision||null, c.fecha_proxima_revision||null, c.devuelto_por||null, c.fecha_devolucion||null, c.obra_id||null, c.departamento||'electrico', eid));
+
+  await batchInsert(bk.inventario_seg, s => env.DB.prepare(
+    'INSERT OR REPLACE INTO inventario_seg (id,tipo_material,modo,codigo,nombre,cantidad_total,cantidad_disponible,estado,fecha_entrada,fecha_caducidad,destino_actual,notas,registrado_por,empresa_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+  ).bind(s.id, s.tipo_material||'', s.modo||'cantidad', s.codigo||null, s.nombre||null, s.cantidad_total||1, s.cantidad_disponible||1, s.estado||'disponible', s.fecha_entrada||null, s.fecha_caducidad||null, s.destino_actual||null, s.notas||null, s.registrado_por||null, eid));
+
+  return json({ ok: true, mensaje: 'Inventario restaurado correctamente' });
 }

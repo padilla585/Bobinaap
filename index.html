@@ -1138,9 +1138,11 @@ header{background:var(--surface);border-bottom:2px solid var(--accent);padding:6
         <div class="settings-section">
           <div class="settings-title">💾 Datos y caché</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn-export" onclick="backupCompleto()" style="font-size:13px">📦 Backup JSON</button>
+            <button class="btn-export" onclick="backupCompleto()" style="font-size:13px">⬇️ Backup JSON</button>
+            <button class="btn-export" onclick="document.getElementById('inputRestInventario').click()" style="font-size:13px">⬆️ Restaurar backup</button>
             <button class="btn-export" onclick="exportarExcelCompleto()" style="font-size:13px">📊 Excel completo</button>
           </div>
+          <input type="file" id="inputRestInventario" accept=".json" style="display:none" onchange="restaurarBackup(this)">
           <button class="btn-primary btn-secondary" style="font-size:13px;margin-top:8px" onclick="limpiarCache()">🗑 Limpiar caché SW</button>
           <button class="btn-primary btn-secondary" style="font-size:13px;margin-top:8px;background:var(--red)" onclick="resetSesionCompleto()">⚠️ Resetear sesión y caché</button>
         </div>
@@ -4225,29 +4227,50 @@ function compartirCodigo() {
 async function backupCompleto() {
   try {
     toast('⏳ Generando backup...', '');
-    const [rb, rp, rc, rh, ro] = await Promise.all([
+    const [rb, rp, rc, ri, rh, ro] = await Promise.all([
       apiCall('/bobinas').then(r => r.json()).catch(() => []),
       apiCall('/pemp').then(r => r.json()).catch(() => []),
       apiCall('/carretillas').then(r => r.json()).catch(() => []),
+      apiCall('/inventario-seg').then(r => r.json()).catch(() => []),
       apiCall('/historial?limit=9999').then(r => r.json()).catch(() => []),
       apiCall('/obras').then(r => r.json()).catch(() => []),
     ]);
     const backup = {
-      version: '3.0',
+      tipo: 'inventario',
+      version: '4.17',
       fecha: new Date().toISOString(),
-      bobinas: rb, pemp: rp, carretillas: rc, historial: rh, obras: ro
+      bobinas: rb, pemp: rp, carretillas: rc,
+      inventario_seg: ri, historial: rh, obras: ro
     };
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
     a.download = `alejandra-backup-${new Date().toISOString().slice(0,10)}.json`;
-    document.body.appendChild(a);
-    a.click();
+    document.body.appendChild(a); a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast('✅ Backup descargado', 'ok');
   } catch (e) { toast('❌ Error al generar backup', 'err'); }
+}
+
+async function restaurarBackup(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  if (!confirm('⚠️ ATENCIÓN\n\nEsto BORRARÁ todos los datos actuales de inventario (bobinas, PEMP, carretillas, seguridad) y los reemplazará con los del archivo.\n\n¿Confirmas?')) return;
+  try {
+    toast('⏳ Restaurando...', '');
+    const text = await file.text();
+    const bk   = JSON.parse(text);
+    const res  = await apiCall('/restaurar/inventario', { method: 'POST', body: JSON.stringify(bk) });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      toast(`✅ ${data.mensaje || 'Restauración completada'}`, 'ok');
+    } else {
+      toast(`❌ ${data.error || 'Error en la restauración'}`, 'err');
+    }
+  } catch (e) { toast('❌ Error al leer el archivo', 'err'); }
 }
 
 async function forzarSync() {
@@ -4339,7 +4362,7 @@ async function cargarObrasSelectUsuario() {
 
 <script>
 // ── Chequeo de versión automático ────────────────────────────────────────────
-const APP_VERSION = '4.16';
+const APP_VERSION = '4.17';
 (function() {
   const b = document.getElementById('versionBadge');
   const a = document.getElementById('versionAjustes');
