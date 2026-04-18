@@ -5,7 +5,7 @@
 ================================================================================
 
 ÚLTIMA ACTUALIZACIÓN: 18/04/2026
-VERSIÓN ACTUAL: v4.16 app vieja | v4.24 app nueva
+VERSIÓN ACTUAL: v4.17 app vieja | v4.24 app nueva
 
 REPO:    https://github.com/padilla585/Bobinaap.git  (branch: main)
 WORKER:  https://gestibobina-proxy.padilla585.workers.dev
@@ -228,6 +228,18 @@ v4.0  |  15/04/2026  [SOLO NUEVA APP]
   - Todos los datos existentes migrados con empresa_id=1 automáticamente
   - Índices creados: idx_*_empresa en tablas principales
   - SW bumpeado a alejandra-v4.0
+
+v4.17  |  18/04/2026  [SOLO APP VIEJA]
+  - MEJORA: Backup completo ahora incluye inventario_seg y marca tipo:'inventario'
+    · Antes solo exportaba bobinas, PEMP, carretillas, historial, obras
+    · Ahora también incluye material de seguridad
+  - NUEVO: Restaurar backup desde Ajustes → Datos y caché
+    · Botón "⬆️ Restaurar backup" abre selector de archivo JSON
+    · Pide confirmación antes de borrar datos actuales
+    · Restaura: bobinas, PEMP, carretillas, inventario_seg
+    · Solo superadmin/encargado pueden restaurar
+    · Worker: nuevo endpoint POST /restaurar/inventario
+  - Worker y GitHub actualizados ✅
 
 v4.16  |  18/04/2026  [SOLO APP VIEJA]
   - MEJORA: botón ← Atrás en el header
