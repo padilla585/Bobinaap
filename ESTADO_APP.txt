@@ -4,8 +4,8 @@
   Ruta local: <RUTA_BASE>\Bobinaap
 ================================================================================
 
-ÚLTIMA ACTUALIZACIÓN: 23/04/2026
-VERSIÓN ACTUAL: v4.19 app vieja | v4.92 app nueva
+ÚLTIMA ACTUALIZACIÓN: 25/04/2026
+VERSIÓN ACTUAL: v4.19 app vieja | v5.12 app nueva
 
 ⚠️  ANTES DE CODIFICAR: leer NuevaApp/IDEAS_PENDIENTES.txt
     Lista completa de bugs activos, mejoras y features pendientes.
@@ -91,6 +91,104 @@ Backup local: <RUTA_BASE>\backup_db_20260413.sql
 ================================================================================
   HISTORIAL DE VERSIONES
 ================================================================================
+
+v5.12  |  25/04/2026  [SOLO NUEVA APP]
+  - NEW/BUG-166: Herramientas propias para Seguridad — panel a medida
+    · Tarjeta 🔧 Herramientas en home Seguridad, sub-tabs Todos | Asignados
+    · Badges: CADUCADO (rojo), caduca pronto (naranja), asignado (índigo), libre (verde)
+    · Reutiliza tabla inventario_seg y endpoints /inventario-seg (sin migración nueva)
+  - Sugerencias resueltas: 166, 87
+  - GitHub actualizado ✅
+
+v5.11  |  25/04/2026  [SOLO NUEVA APP]
+  - BUG-116 + BUG-63: pedidos y datos cruzados entre departamentos
+    · Fix: X-Departamento header tiene prioridad para TODOS los roles cuando presente
+  - Worker redesplegado (Version ID: 54d348bd-dd8a-434e-bc12-c52f2843ecde)
+  - GitHub actualizado ✅
+
+v5.10  |  25/04/2026  [SOLO NUEVA APP]
+  - BUG: obra-dashboard crasheaba con "no such column: entrada"
+    · Fix: DATE(entrada) → fecha en getObraDashboard() del worker
+  - Worker redesplegado (Version ID: bf48170b-8ed2-482e-8dd7-f8d8ea6fd103)
+  - GitHub actualizado ✅
+
+v5.09  |  24/04/2026  [SOLO NUEVA APP]
+  - MEJ: tarjetas del home reordenables (drag-and-drop + táctil)
+    · Botón 🔀 flotante, orden guardado en localStorage (alejandra_home_order)
+  - GitHub actualizado ✅
+
+v5.08  |  24/04/2026  [SOLO NUEVA APP]
+  - BUG CRÍTICO: app congelada en splash — worker redesplegado (estaba en v4.93)
+    · SW bumpeado a alejandra-v5.08, version.json actualizado
+    · Worker Version ID: e2c09db0-a999-4ea1-941d-38f071490fce
+  - GitHub actualizado ✅
+
+v5.07  |  24/04/2026  [SOLO NUEVA APP]
+  - NEW-13: Calendario de obra con festivos automáticos (Nager.Date API)
+    · D1: tabla eventos_calendario + obras.comunidad
+    · Grid mensual, festivos en rojo, eventos clicables
+  - BUG CRÍTICO: guardarIncidencia duplicada → fix _guardarIncidenciaBase()
+  - GitHub actualizado ✅
+
+v5.06  |  24/04/2026  [SOLO NUEVA APP]
+  - NEW-22: Incidencias con fotos (R2) en todos los departamentos
+    · D1: incidencias + incidencia_fotos, flujo abierta→en progreso→resuelta
+  - GitHub actualizado ✅
+
+v5.05  |  24/04/2026  [SOLO NUEVA APP]
+  - Dashboard extendido a Seguridad y Personal
+  - GitHub actualizado ✅
+
+v5.04  |  24/04/2026  [SOLO NUEVA APP]
+  - NEW-27: Dashboard de obra — 5 KPIs, tarjeta Resumen en home
+  - GitHub actualizado ✅
+
+v5.03  |  24/04/2026  [SOLO NUEVA APP]
+  - NEW-25: Escáner de albaranes por pedido (R2), múltiples por pedido
+    · D1: tabla albaranes; Worker: GET/POST /pedidos/:id/albaranes
+  - GitHub actualizado ✅
+
+v5.02  |  24/04/2026  [SOLO NUEVA APP]
+  - NEW-26: Control de combustible/carga de máquinas (tabla repostajes)
+  - GitHub actualizado ✅
+
+v5.01  |  24/04/2026  [SOLO NUEVA APP]
+  - BUG-164: chat no mostraba mensajes — obra_id faltaba en POST chatEnviar
+  - GitHub actualizado ✅
+
+v5.00  |  24/04/2026  [SOLO NUEVA APP]
+  - NEW-24: Alertas de stock mínimo (tipos_herramienta, inventario_seg, tipos_cable)
+    · Badge campana, panel notificaciones, Telegram al bajar del mínimo
+  - GitHub actualizado ✅
+
+v4.99  |  24/04/2026  [SOLO NUEVA APP]
+  - Chat accesible desde departamento Personal (tab 💬 en screenPersonal)
+  - GitHub actualizado ✅
+
+v4.98  |  24/04/2026  [SOLO NUEVA APP]
+  - Chat más visible: emoji 💬 en header, tarjeta en home de todos los depts
+  - GitHub actualizado ✅
+
+v4.97  |  24/04/2026  [SOLO NUEVA APP]
+  - Subcarpetas en módulo Docs (campo parent_id en carpetas)
+  - GitHub actualizado ✅
+
+v4.96  |  24/04/2026  [SOLO NUEVA APP]
+  - Notas en Docs (tabla docs_notas), accesibles desde cada carpeta
+  - GitHub actualizado ✅
+
+v4.95  |  24/04/2026  [SOLO NUEVA APP]
+  - Horarios por día de semana en obras (campo horarios_dia en horarios_obra)
+  - GitHub actualizado ✅
+
+v4.94  |  24/04/2026  [SOLO NUEVA APP]
+  - Departamentos activos configurables por empresa (campo departamentos en empresas)
+  - GitHub actualizado ✅
+
+v4.93  |  24/04/2026  [SOLO NUEVA APP]
+  - BUG: fichajes sin columna minutos_retraso → error al registrar
+    · ALTER TABLE fichajes ADD COLUMN minutos_retraso INTEGER
+  - GitHub actualizado ✅
 
 v4.92  |  23/04/2026  [SOLO NUEVA APP]
   - NEW-12: soporte NFC en pestaña Escanear
